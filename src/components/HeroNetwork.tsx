@@ -9,6 +9,8 @@ type Node = {
   baseY: number;
   r: number;
   color: string;
+  drawX: number;
+  drawY: number;
 };
 
 export function HeroNetwork() {
