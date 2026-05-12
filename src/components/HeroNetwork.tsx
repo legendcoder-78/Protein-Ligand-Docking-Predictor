@@ -60,6 +60,8 @@ export function HeroNetwork() {
           vy: (Math.random() - 0.5) * 0.25,
           r: accent ? 2.4 : 1.6,
           color: accent ?? WHITE,
+          drawX: x,
+          drawY: y,
         };
       });
     };
