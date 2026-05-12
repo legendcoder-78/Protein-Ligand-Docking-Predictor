@@ -85,10 +85,23 @@ export function HeroNetwork() {
       const m = mouseRef.current;
 
       for (const n of nodes) {
+        // brownian jitter
+        n.vx += (Math.random() - 0.5) * 0.25;
+        n.vy += (Math.random() - 0.5) * 0.25;
+        // clamp speed
+        const sp = Math.hypot(n.vx, n.vy);
+        const maxSp = 2.2;
+        if (sp > maxSp) {
+          n.vx = (n.vx / sp) * maxSp;
+          n.vy = (n.vy / sp) * maxSp;
+        }
+
         n.x += n.vx;
         n.y += n.vy;
-        if (n.x < 0 || n.x > width) n.vx *= -1;
-        if (n.y < 0 || n.y > height) n.vy *= -1;
+        if (n.x < n.r) { n.x = n.r; n.vx *= -1; }
+        else if (n.x > width - n.r) { n.x = width - n.r; n.vx *= -1; }
+        if (n.y < n.r) { n.y = n.r; n.vy *= -1; }
+        else if (n.y > height - n.r) { n.y = height - n.r; n.vy *= -1; }
 
         let dx = 0;
         let dy = 0;
@@ -96,17 +109,15 @@ export function HeroNetwork() {
           const ddx = n.x - m.x;
           const ddy = n.y - m.y;
           const dist = Math.hypot(ddx, ddy);
-          if (dist < 180 && dist > 0.01) {
-            const force = (180 - dist) / 180;
-            dx = (ddx / dist) * force * 18;
-            dy = (ddy / dist) * force * 18;
+          if (dist < 200 && dist > 0.01) {
+            const force = (200 - dist) / 200;
+            dx = (ddx / dist) * force * 60;
+            dy = (ddy / dist) * force * 60;
           }
         }
 
-        const drawX = n.x + dx;
-        const drawY = n.y + dy;
-        n.drawX = drawX;
-        n.drawY = drawY;
+        n.drawX = n.x + dx;
+        n.drawY = n.y + dy;
       }
 
       // edges
@@ -117,10 +128,10 @@ export function HeroNetwork() {
           const dx = a.drawX - b.drawX;
           const dy = a.drawY - b.drawY;
           const dist = Math.hypot(dx, dy);
-          if (dist < 150) {
-            const alpha = (1 - dist / 150) * 0.25;
-            ctx.strokeStyle = `rgba(140, 200, 240, ${alpha})`;
-            ctx.lineWidth = 0.6;
+          if (dist < 120) {
+            const alpha = (1 - dist / 120) * 0.15;
+            ctx.strokeStyle = `rgba(180, 220, 245, ${alpha})`;
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(a.drawX, a.drawY);
             ctx.lineTo(b.drawX, b.drawY);
