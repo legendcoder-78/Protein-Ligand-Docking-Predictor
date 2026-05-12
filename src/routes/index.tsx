@@ -18,7 +18,10 @@ function Index() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-32">
+        <div className="absolute inset-y-0 right-0 w-full md:w-1/2 pointer-events-none md:pointer-events-auto opacity-60 md:opacity-100 z-0">
+          <HeroNetwork />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 pb-32">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs font-mono text-muted-foreground mb-8">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             GNN inference · &lt;50ms per ligand
