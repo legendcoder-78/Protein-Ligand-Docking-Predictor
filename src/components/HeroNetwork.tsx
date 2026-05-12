@@ -146,9 +146,10 @@ export function HeroNetwork() {
         ctx.fillStyle = n.color;
         if (n.color !== WHITE) {
           ctx.shadowColor = n.color;
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 18;
         } else {
-          ctx.shadowBlur = 0;
+          ctx.shadowColor = "rgba(255,255,255,0.4)";
+          ctx.shadowBlur = 4;
         }
         ctx.arc(n.drawX, n.drawY, n.r, 0, Math.PI * 2);
         ctx.fill();
