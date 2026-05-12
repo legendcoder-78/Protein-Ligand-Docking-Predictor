@@ -1,0 +1,26 @@
+{
+  "name": "BindGraph — GNN Protein-Ligand Docking",
+  "short_name": "BindGraph",
+  "description": "Predict protein-ligand binding affinity in milliseconds with Graph Neural Networks.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#22d3ee",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

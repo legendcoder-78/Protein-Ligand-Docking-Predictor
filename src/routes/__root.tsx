@@ -45,10 +45,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#22d3ee" },
       { title: "BindGraph — GNN Protein-Ligand Docking" },
       { name: "description", content: "Predict protein-ligand binding affinity in milliseconds with Graph Neural Networks." },
     ],
     links: [
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
@@ -83,10 +87,8 @@ function Header() {
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/70 border-b border-border">
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md grid-bg glow-border flex items-center justify-center">
-            <div className="h-3 w-3 rounded-full bg-primary glow-text" style={{ boxShadow: "0 0 12px var(--neon)" }} />
-          </div>
-          <span className="font-semibold tracking-tight">Bind<span className="gradient-text">Graph</span></span>
+          <img src="/logo.png" alt="BindGraph" className="h-8 w-8 rounded-md" />
+          <span className="text-lg font-semibold tracking-tight">Bind<span className="gradient-text">Graph</span></span>
         </Link>
         <nav className="hidden md:flex items-center gap-1 text-sm">
           {navLinks.map((l) => (
