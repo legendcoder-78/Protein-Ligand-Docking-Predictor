@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Atom, Zap, Network, Gauge } from "lucide-react";
+import { HeroNetwork } from "@/components/HeroNetwork";
 
 export const Route = createFileRoute("/")({
   head: () => ({
