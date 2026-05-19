@@ -1,0 +1,8 @@
+In your current project, the backend logic is primarily handled by TanStack Start's Server Functions and server entry point. Specifically, these files are responsible:
+
+src/api.ts: This is where your actual backend business logic lives. It uses TanStack Start's createServerFn to define functions that run exclusively on the server. Currently, it contains simulated backend operations like:
+dockLigand: Simulates an AI inference to dock a ligand to a protein.
+compareLigands: Handles batch processing to compare multiple ligands.
+src/server.ts: This is the underlying server entry point for your application (often configured to run on edge environments like Cloudflare Workers). It intercepts incoming HTTP requests, orchestrates Server-Side Rendering (SSR), and handles catastrophic server errors before returning a response to the client.
+Because you are using TanStack Start, you don't have a traditional isolated "backend server folder" (like an Express server). Instead, your backend logic (src/api.ts) is seamlessly integrated within the same codebase but executed securely on the server via createServerFn.
+

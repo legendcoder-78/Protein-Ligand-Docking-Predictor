@@ -1,84 +1,116 @@
 import { createServerFn } from "@tanstack/react-start";
 
 /**
- * Utility to simulate network/processing delay
- */
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Generates pseudo-deterministic mock binding affinity results based on input SMILES.
- * This simulates the output of a GNN model without the computational overhead.
- */
-const generateMockResult = (smiles: string, protein: string) => {
-  // Simple hash for deterministic results per SMILES
-  let hash = 0;
-  for (let i = 0; i < smiles.length; i++) {
-    hash = (hash << 5) - hash + smiles.charCodeAt(i);
-    hash |= 0;
-  }
-  
-  const seed = Math.abs(hash);
-  const pkd = +(6 + (seed % 300) / 100).toFixed(2);
-  const dg = +(-(8 + (seed % 400) / 100)).toFixed(2);
-  const reliability = 80 + (seed % 15);
-
-  const allResidues = [
-    ["HIS-57", "H-bond"],
-    ["ASP-102", "ionic"],
-    ["SER-195", "covalent"],
-    ["TRP-215", "π-stack"],
-    ["TYR-151", "H-bond"],
-    ["GLY-193", "van der Waals"],
-  ];
-
-  // Randomly select interaction residues based on seed
-  const interactions = allResidues
-    .sort(() => (seed % 10) - 5)
-    .slice(0, 3 + (seed % 2));
-
-  return {
-    pkd,
-    dg,
-    interactions,
-    reliability,
-    smiles,
-    protein,
-    timestamp: new Date().toISOString(),
-  };
-};
-
-/**
- * Server function to simulate docking a single ligand to a protein.
- * Includes a realistic delay to mimic AI inference.
+ * Server function to handle genuine model inference.
+ * Executes on the server layer securely away from client injection.
  */
 export const dockLigand = createServerFn({ method: "POST" })
-  .inputValidator((data: { smiles: string; protein: string }) => data)
+  .inputValidator((data: { smiles: string; protein: string; pdbContent?: string }) => data)
   .handler(async ({ data }) => {
-    console.log(`[API] Docking ligand: ${data.smiles} to protein: ${data.protein}`);
+    console.log(`[API Proxy] Passing payload data to Python inference node...`);
     
-    // Simulate processing delay (1.5s to 3s)
-    const delay = 1500 + Math.random() * 1500;
-    await sleep(delay);
+    // 1. Create a Standard Web FormData payload to transport text/files over HTTP
+    const pipelineForm = new FormData();
+    pipelineForm.append("smiles", data.smiles);
+    
+    // Create a mock blob from text data if file contents exist, or use a default placeholder file blob
+    const fileBlob = new Blob([data.pdbContent || "ATOM CONTENT PLACEHOLDER"], { type: "text/plain" });
+    pipelineForm.append("pdb_file", fileBlob, `${data.protein}.pdb`);
 
-    return generateMockResult(data.smiles, data.protein);
+    try {
+      // 2. Fetch the prediction directly from your backend local machine learning core
+      const targetResponse = await fetch("http://127.0.0.1:5000/api/v1/predict", {
+        method: "POST",
+        body: pipelineForm,
+      });
+
+      if (!targetResponse.ok) {
+        throw new Error(`Python engine error: ${targetResponse.statusText}`);
+      }
+
+      const mlModelResult = await targetResponse.json();
+
+      // 3. Map values explicitly back to your Tanstack state components
+      return {
+        pkd: mlModelResult.pkd,
+        dg: mlModelResult.dg,
+        interactions: mlModelResult.interactions,
+        reliability: mlModelResult.reliability,
+        smiles: data.smiles,
+        protein: data.protein,
+        timestamp: new Date().toISOString(),
+        willBind: mlModelResult.will_bind
+      };
+
+    } catch (error) {
+      console.error("[API Integration Error]:", error);
+      // Clean fallback object so your UI elements don't collapse if connection resets
+      return {
+        pkd: 0.0,
+        dg: 0.0,
+        interactions: [],
+        reliability: 0,
+        smiles: data.smiles,
+        protein: data.protein,
+        timestamp: new Date().toISOString(),
+        error: true
+      };
+    }
   });
 
-/**
- * Server function to simulate batch screening of multiple ligands.
- * Returns a ranked list based on predicted binding affinity (pKd).
- */
+// Maintain your batch processor function
 export const compareLigands = createServerFn({ method: "POST" })
   .inputValidator((data: { protein: string; ligands: { id: string; smiles: string }[] }) => data)
   .handler(async ({ data }) => {
     console.log(`[API] Comparing ${data.ligands.length} ligands for protein: ${data.protein}`);
+    
+    // Map using Promise.all() across dockLigand logic
+    const results = await Promise.all(
+      data.ligands.map(async (ligand) => {
+        const pipelineForm = new FormData();
+        pipelineForm.append("smiles", ligand.smiles);
+        
+        const fileBlob = new Blob(["ATOM CONTENT PLACEHOLDER"], { type: "text/plain" });
+        pipelineForm.append("pdb_file", fileBlob, `${data.protein}.pdb`);
+        
+        try {
+          const targetResponse = await fetch("http://127.0.0.1:5000/api/v1/predict", {
+            method: "POST",
+            body: pipelineForm,
+          });
 
-    // Simulate batch processing delay (fixed 2s)
-    await sleep(2000);
+          if (!targetResponse.ok) {
+            throw new Error(`Python engine error: ${targetResponse.statusText}`);
+          }
 
-    const results = data.ligands.map((ligand) => ({
-      ...generateMockResult(ligand.smiles, data.protein),
-      id: ligand.id,
-    }));
+          const mlModelResult = await targetResponse.json();
+
+          return {
+            id: ligand.id,
+            pkd: mlModelResult.pkd,
+            dg: mlModelResult.dg,
+            interactions: mlModelResult.interactions,
+            reliability: mlModelResult.reliability,
+            smiles: ligand.smiles,
+            protein: data.protein,
+            timestamp: new Date().toISOString(),
+            willBind: mlModelResult.will_bind
+          };
+        } catch (error) {
+          return {
+            id: ligand.id,
+            pkd: 0.0,
+            dg: 0.0,
+            interactions: [],
+            reliability: 0,
+            smiles: ligand.smiles,
+            protein: data.protein,
+            timestamp: new Date().toISOString(),
+            error: true
+          };
+        }
+      })
+    );
 
     // Sort by affinity (pKd descending) for the leaderboard
     return results.sort((a, b) => b.pkd - a.pkd);

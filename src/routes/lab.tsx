@@ -16,6 +16,7 @@ export const Route = createFileRoute("/lab")({
 function Lab() {
   const [smiles, setSmiles] = useState("CC(=O)Oc1ccccc1C(=O)O");
   const [pdb, setPdb] = useState<string>("4HHB.pdb");
+  const [pdbContent, setPdbContent] = useState<string>("");
   const [heatmap, setHeatmap] = useState(true);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<{ 
@@ -33,7 +34,7 @@ function Lab() {
   const run = async () => {
     setRunning(true);
     try {
-      const data = await dockLigand({ data: { smiles, protein: pdb } });
+      const data = await dockLigand({ data: { smiles, protein: pdb, pdbContent } });
       setResult(data);
     } catch (error) {
       console.error("Docking failed:", error);
@@ -63,12 +64,27 @@ function Lab() {
         <aside className="space-y-4">
           <div className="rounded-lg border border-border bg-card p-4">
             <label className="text-xs font-mono text-muted-foreground uppercase">Protein (PDB)</label>
-            <div className="mt-2 border-2 border-dashed border-border rounded-md p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+            <label className="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-md p-6 text-center hover:border-primary/50 transition-colors cursor-pointer relative overflow-hidden">
               <Upload className="h-6 w-6 mx-auto text-primary" />
               <div className="mt-2 text-sm font-mono">{pdb}</div>
-              <div className="text-xs text-muted-foreground">Drop .pdb file</div>
-            </div>
-            <button onClick={() => setPdb("1ATP.pdb")} className="mt-3 w-full text-xs font-mono text-muted-foreground hover:text-primary">↻ Use sample 1ATP</button>
+              <div className="text-xs text-muted-foreground">Drop or select .pdb file</div>
+              <input 
+                type="file" 
+                accept=".pdb"
+                className="hidden" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setPdb(file.name);
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    setPdbContent(ev.target?.result as string);
+                  };
+                  reader.readAsText(file);
+                }} 
+              />
+            </label>
+            <button onClick={() => { setPdb("1ATP.pdb"); setPdbContent(""); }} className="mt-3 w-full text-xs font-mono text-muted-foreground hover:text-primary">↻ Use sample 1ATP</button>
           </div>
 
           <div className="rounded-lg border border-border bg-card p-4">

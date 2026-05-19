@@ -1,8 +1,8 @@
 # 🧬 BindGraph — GNN-Powered Protein-Ligand Docking
 
-> **⚠️ Ideation Stage — This project is currently a frontend concept/prototype. The backend (GNN inference engine, molecular parsing, and docking pipeline) has not been implemented yet.**
+> **⚠️ Current State — This project currently uses a Random Forest Machine Learning model for protein-ligand docking prediction as a proof of concept. A more advanced Graph Neural Network (GNN) implementation is planned for the future.**
 
-BindGraph is a web-based platform that aims to predict protein-ligand binding affinity using **Graph Neural Networks (GNNs)** — replacing hours of physics-based simulation with milliseconds of message passing.
+BindGraph is a web-based platform that predicts protein-ligand binding affinity. While currently powered by traditional ML (Random Forest), our vision is to upgrade to **Graph Neural Networks (GNNs)** — replacing hours of physics-based simulation with milliseconds of message passing.
 
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)
@@ -55,14 +55,18 @@ SMILES String → Atom Graph     ─┘
 - **Vite 7** as the build tool
 - **Cloudflare Workers** (deployment target via Wrangler)
 
-### Backend (Not Implemented ❌)
-The following components are part of the ideation and have **not been built yet**:
+### Backend
+Currently implemented as a basic ML inference API:
+- **Python** & **FastAPI** — API server
+- **Scikit-Learn** — Random Forest Classification
+- **RDKit** — Molecular parsing and feature extraction
+
+#### Future GNN Backend (Planned)
+The following components are planned for the future GNN implementation:
 - **PyTorch** — Deep learning framework for the GNN model
 - **PyG (PyTorch Geometric)** — Graph neural network library
-- **RDKit** — Molecular parsing and SMILES processing
 - **DeepChem** — Molecular ML toolkit
 - **PDBbind dataset** — Training data (19,443 protein-ligand complexes)
-- **REST API** — Backend inference server for real-time predictions
 
 ---
 
@@ -136,8 +140,9 @@ graphy-ligand-snap/
 - [x] Interactive docking lab interface
 - [x] Dashboard with mock analytics
 - [x] Batch screening leaderboard
+- [x] Basic ML inference server (Python/FastAPI + Random Forest)
+- [x] Molecular parsing pipeline (RDKit)
 - [ ] Backend GNN inference server (PyTorch + PyG)
-- [ ] Molecular parsing pipeline (RDKit)
 - [ ] PDBbind model training
 - [ ] Real-time WebSocket predictions
 - [ ] 3D molecular viewer (WebGL / Mol*)
@@ -152,5 +157,5 @@ This project is currently private.
 
 ---
 
-> **Note:** All data displayed in the UI (affinity scores, run history, leaderboard rankings) is **mock/simulated** and does not reflect real molecular docking results. The backend inference engine is planned for future development.
+> **Note:** Some data displayed in the UI (like dashboard analytics and leaderboard rankings) may still be **mock/simulated**. The actual docking lab now connects to a basic ML backend.
 # Protein-Ligand-Docking-Predictor
