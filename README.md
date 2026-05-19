@@ -75,24 +75,53 @@ The following components are planned for the future GNN implementation:
 ### Prerequisites
 - **Node.js** ≥ 18
 - **npm** or **bun**
+- **Python** 3.9+
+- **pip** (Python package installer)
 
-### Installation
+### Installation & Running
+
+This project requires running both the frontend UI and the backend ML inference server simultaneously.
+
+#### 1. Start the ML Backend Server
+
+Open a terminal and set up the Python environment:
 
 ```bash
 # Clone the repository
-git clone https://github.com/legendcoder-78/graphy-ligand-snap.git
+git clone https://github.com/legendcoder-78/Protein-Ligand-Docking-Predictor.git
 
 # Navigate to the project directory
-cd graphy-ligand-snap
+cd Protein-Ligand-Docking-Predictor
 
-# Install dependencies
+# Set up a virtual environment (optional but recommended)
+python -m venv env
+source env/bin/activate  # On Windows use: env\Scripts\activate
+
+# Install the required Python packages
+pip install fastapi uvicorn scikit-learn rdkit joblib numpy
+
+# Navigate to the python files directory and start the inference server
+cd python_files
+python inference.py
+```
+The FastAPI server will start running at `http://127.0.0.1:5000`.
+
+#### 2. Start the Frontend Web App
+
+Open a **new terminal window/tab**, keep the backend running, and start the frontend:
+
+```bash
+# Navigate to the root of the project
+cd Protein-Ligand-Docking-Predictor
+
+# Install Node dependencies
 npm install
 
-# Start the development server
+# Start the Vite development server
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The app will be available at `http://localhost:5173` (or the port specified by Vite, typically 8080).
 
 ### Available Scripts
 
