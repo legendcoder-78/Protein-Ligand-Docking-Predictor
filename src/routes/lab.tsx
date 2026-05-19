@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Upload, Play, FlaskConical } from "lucide-react";
+import { dockLigand } from "../api";
 
 export const Route = createFileRoute("/lab")({
   head: () => ({
@@ -17,14 +18,28 @@ function Lab() {
   const [pdb, setPdb] = useState<string>("4HHB.pdb");
   const [heatmap, setHeatmap] = useState(true);
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<{ pkd: number; dg: number } | null>({ pkd: 7.42, dg: -10.1 });
+  const [result, setResult] = useState<{ 
+    pkd: number; 
+    dg: number; 
+    interactions: string[][]; 
+    reliability: number 
+  } | null>({ 
+    pkd: 7.42, 
+    dg: -10.1, 
+    interactions: [["HIS-57", "H-bond"], ["ASP-102", "ionic"], ["SER-195", "covalent"], ["TRP-215", "π-stack"]],
+    reliability: 87
+  });
 
-  const run = () => {
+  const run = async () => {
     setRunning(true);
-    setTimeout(() => {
-      setResult({ pkd: +(6 + Math.random() * 3).toFixed(2), dg: +(-(8 + Math.random() * 4)).toFixed(2) });
+    try {
+      const data = await dockLigand({ data: { smiles, protein: pdb } });
+      setResult(data);
+    } catch (error) {
+      console.error("Docking failed:", error);
+    } finally {
       setRunning(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -150,7 +165,7 @@ function Lab() {
           <div className="rounded-lg border border-border bg-card p-5">
             <div className="text-xs font-mono text-muted-foreground uppercase">Key residues</div>
             <ul className="mt-3 space-y-2 text-sm font-mono">
-              {[["HIS-57", "H-bond"], ["ASP-102", "ionic"], ["SER-195", "covalent"], ["TRP-215", "π-stack"]].map(([r, t]) => (
+              {result?.interactions.map(([r, t]) => (
                 <li key={r} className="flex justify-between items-center">
                   <span className="text-primary">{r}</span>
                   <span className="text-[10px] text-muted-foreground">{t}</span>
@@ -163,7 +178,7 @@ function Lab() {
             <div className="text-xs font-mono text-muted-foreground uppercase">Reliability</div>
             <div className="mt-2 flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-primary" />
-              <span className="text-2xl font-bold">87%</span>
+              <span className="text-2xl font-bold">{result?.reliability}%</span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Inputs match the PDBbind training distribution.</p>
           </div>

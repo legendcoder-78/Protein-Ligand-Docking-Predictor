@@ -1,0 +1,33 @@
+### Role & Objective
+You are an expert full-stack developer. We need to implement a simple, lightweight backend for our computational biology prototype, BindGraph, to replace the current mock frontend data with a functional client-server request-response lifecycle. 
+
+Do NOT implement an actual Graph Neural Network (GNN) or heavy Machine Learning model. Instead, we want a mock inference backend that simulates calculations to demonstrate the platform's core workflows.
+
+### Core Tasks
+
+1. **Setup a Lightweight Server:**
+   - Create a simple backend API. (Choose the path of least resistance based on the current architecture: either leverage Cloudflare Workers via the existing `wrangler.jsonc` setup, or create a minimal Node/Express or Python/FastAPI server).
+   - Ensure CORS is correctly configured so the React 19 frontend can communicate with it.
+
+2. **Implement the "Mock Inference" Endpoint (`/api/dock`):**
+   - **Method:** POST
+   - **Payload:** Should accept a ligand identifier (SMILES string or PDB file name) and a target protein identifier.
+   - **Simulation Logic:** - Parse the input string or filename briefly to validate it format-wise.
+     - Introduce a slight, realistic network/processing delay (e.g., 1.5 to 3 seconds) to simulate an AI model running in the background.
+     - Generate a deterministic or pseudo-random (but scientifically plausible) affinity score (e.g., $pK_d$, $K_i$, or binding energy in kcal/mol), along with a few mock structural breakdown statistics.
+   - **Response:** Return a JSON payload containing the binding affinity data, interaction metrics, and a success status.
+
+3. **Implement a Batch Comparison Endpoint (`/api/compare`):**
+   - **Method:** POST
+   - **Payload:** Accepts an array of multiple ligands.
+   - **Logic:** Process each through the simulation logic and return a sorted array ranked by binding affinity to feed our Leaderboard System.
+
+4. **Connect Frontend to Backend:**
+   - Update `src/routes/lab.tsx` (the docking simulator) to trigger a fetch/mutation request to `/api/dock` upon file/SMILES submission instead of instantly showing local mock state.
+   - Update `src/routes/compare.tsx` to fetch ranked results from `/api/compare`.
+   - Ensure loading states are properly handled in the UI while waiting for the server response.
+
+### Expected Deliverables
+- Clean, documented backend code files.
+- Modest updates to the existing TanStack Start/Router frontend code to integrate the API calls.
+- Verification that the end-to-end flow works seamlessly for a user presentation.

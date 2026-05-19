@@ -1,0 +1,46 @@
+# BindGraph Project Overview
+
+BindGraph is a high-fidelity frontend prototype for a computational biology platform. Its goal is to use Graph Neural Networks (GNNs) to predict protein-ligand binding affinity.
+
+## 🧬 Present Capabilities
+The project is currently a feature-complete frontend concept with simulated data.
+- **Interactive Docking Lab:** A simulator for inputting molecular data (PDB/SMILES) and triggering mock inference.
+- **Animated Visualizations:** A reactive Canvas-based molecular network animation on the landing page.
+- **Analytics Dashboard:** Visual representations of binding data and interaction breakdowns using charts.
+- **Leaderboard System:** A "Batch Compare" feature to rank multiple ligands.
+- **Modern Tech Stack:** Built with React 19, TanStack Start (SSR), Tailwind CSS 4, and Shadcn UI.
+
+## 📂 File-by-File Breakdown
+
+### Core Configuration
+- `package.json`: Defines the stack (React 19, TanStack Router/Start, Vite 7).
+- `wrangler.jsonc`: Configuration for Cloudflare Workers deployment.
+- `vite.config.ts`: Setup for the build pipeline and TanStack Router plugin.
+
+### Source Code (`src/`)
+- `routes/`:
+    - `index.tsx`: Landing page with hero section.
+    - `lab.tsx`: Interactive docking simulator (core prototype).
+    - `dashboard.tsx`: Analytics view with mock charts.
+    - `compare.tsx`: Comparison table for ligand ranking.
+    - `__root.tsx`: Master layout with navigation and footer.
+- `components/`:
+    - `HeroNetwork.tsx`: Canvas animation of a molecular graph.
+    - `ui/`: UI component library (Radix UI + Tailwind).
+- `lib/`:
+    - `utils.ts`: Tailwind CSS utility.
+    - `error-capture.ts` / `error-page.ts`: SSR error handling.
+- `server.ts` / `start.ts`: Server and client entry points.
+
+## ✅ What is Implemented
+- Full UI/UX for all planned pages.
+- File-based routing via TanStack Router.
+- Responsive design with a modern "neon-dark" aesthetic.
+- Mock workflows for docking jobs and results.
+
+## 🛠️ What Else Needs to be Done (Roadmap)
+- **Backend Inference Server:** Python/FastAPI/PyTorch backend for actual GNN model execution.
+- **Molecular Parsing:** RDKit integration for processing SMILES and PDB files.
+- **3D Molecular Viewer:** Integration of Mol* or NGL Viewer for real 3D visualization.
+- **Data Persistence:** Database (e.g., Cloudflare D1) for saving runs and history.
+- **Authentication:** User login and project management.

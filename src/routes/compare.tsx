@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Play, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { compareLigands } from "../api";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -11,26 +13,61 @@ export const Route = createFileRoute("/compare")({
   component: Compare,
 });
 
-const leaderboard = [
-  { rank: 1, name: "Imatinib", smiles: "Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1", pkd: 9.85, dg: -13.4, conf: 0.93 },
-  { rank: 2, name: "Dasatinib", smiles: "CC1=C(C=C(C=C1)NC...", pkd: 9.41, dg: -12.8, conf: 0.91 },
-  { rank: 3, name: "Nilotinib", smiles: "Cc1cn(-c2cc(NC...", pkd: 8.92, dg: -12.1, conf: 0.88 },
-  { rank: 4, name: "Bosutinib", smiles: "COc1cc(Nc2ncnc3...", pkd: 8.34, dg: -11.4, conf: 0.85 },
-  { rank: 5, name: "Ponatinib", smiles: "Cc1ccc(C#Cc2ccc...", pkd: 7.91, dg: -10.8, conf: 0.83 },
-  { rank: 6, name: "Aspirin", smiles: "CC(=O)Oc1ccccc1C(=O)O", pkd: 4.21, dg: -5.7, conf: 0.79 },
-  { rank: 7, name: "Caffeine", smiles: "Cn1cnc2c1c(=O)n(C)c(=O)n2C", pkd: 3.88, dg: -5.3, conf: 0.74 },
+const initialLeaderboard = [
+  { id: "1", name: "Imatinib", smiles: "Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1", pkd: 9.85, dg: -13.4, reliability: 93 },
+  { id: "2", name: "Dasatinib", smiles: "CC1=C(C=C(C=C1)NC...", pkd: 9.41, dg: -12.8, reliability: 91 },
+  { id: "3", name: "Nilotinib", smiles: "Cc1cn(-c2cc(NC...", pkd: 8.92, dg: -12.1, reliability: 88 },
+  { id: "4", name: "Bosutinib", smiles: "COc1cc(Nc2ncnc3...", pkd: 8.34, dg: -11.4, reliability: 85 },
+  { id: "5", name: "Ponatinib", smiles: "Cc1ccc(C#Cc2ccc...", pkd: 7.91, dg: -10.8, reliability: 83 },
+  { id: "6", name: "Aspirin", smiles: "CC(=O)Oc1ccccc1C(=O)O", pkd: 4.21, dg: -5.7, reliability: 79 },
+  { id: "7", name: "Caffeine", smiles: "Cn1cnc2c1c(=O)n(C)c(=O)n2C", pkd: 3.88, dg: -5.3, reliability: 74 },
 ];
 
 function Compare() {
+  const [leaderboard, setLeaderboard] = useState<any[]>(initialLeaderboard);
+  const [loading, setLoading] = useState(false);
+
+  const runScreening = async () => {
+    setLoading(true);
+    try {
+      const ligands = leaderboard.map(l => ({ id: l.id, smiles: l.smiles }));
+      const results = await compareLigands({ data: { protein: "2HYY.pdb", ligands } });
+      
+      // Merge back the names
+      const updated = results.map((res: any, index: number) => {
+        const original = leaderboard.find(l => l.id === res.id);
+        return {
+          ...res,
+          rank: index + 1,
+          name: original?.name || "Unknown",
+        };
+      });
+      
+      setLeaderboard(updated);
+    } catch (error) {
+      console.error("Screening failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs font-mono text-primary uppercase tracking-wider">Batch screening</div>
           <h1 className="mt-1 text-3xl font-bold">Molecular Leaderboard</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Target protein: <span className="font-mono text-primary">ABL1 kinase (PDB 2HYY)</span> · 7 ligands ranked</p>
+          <p className="mt-2 text-sm text-muted-foreground">Target protein: <span className="font-mono text-primary">ABL1 kinase (PDB 2HYY)</span> · {leaderboard.length} ligands ranked</p>
         </div>
         <div className="flex gap-2">
+          <button 
+            onClick={runScreening}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            {loading ? "Screening..." : "Run Batch Screening"}
+          </button>
           <button className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-secondary">
             <FileText className="h-4 w-4" /> PDF Report
           </button>
@@ -49,11 +86,11 @@ function Compare() {
           <span className="text-right">ΔG</span>
           <span className="text-right">Conf</span>
         </div>
-        {leaderboard.map((l) => (
-          <div key={l.rank} className="grid grid-cols-[60px_1fr_1fr_120px_120px_100px] gap-4 px-6 py-4 border-t border-border items-center hover:bg-secondary/20">
+        {leaderboard.map((l, index) => (
+          <div key={l.id} className="grid grid-cols-[60px_1fr_1fr_120px_120px_100px] gap-4 px-6 py-4 border-t border-border items-center hover:bg-secondary/20 transition-colors">
             <div className="flex items-center gap-2">
-              <span className={`h-7 w-7 rounded-md flex items-center justify-center text-xs font-mono font-bold ${l.rank <= 3 ? "bg-primary text-primary-foreground glow-border" : "bg-secondary text-muted-foreground"}`}>
-                {l.rank}
+              <span className={`h-7 w-7 rounded-md flex items-center justify-center text-xs font-mono font-bold ${index < 3 ? "bg-primary text-primary-foreground glow-border" : "bg-secondary text-muted-foreground"}`}>
+                {index + 1}
               </span>
             </div>
             <div className="font-semibold">{l.name}</div>
@@ -65,7 +102,7 @@ function Compare() {
               </div>
             </div>
             <div className="text-right font-mono text-sm">{l.dg.toFixed(1)}</div>
-            <div className="text-right font-mono text-sm text-muted-foreground">{(l.conf * 100).toFixed(0)}%</div>
+            <div className="text-right font-mono text-sm text-muted-foreground">{l.reliability}%</div>
           </div>
         ))}
       </div>
